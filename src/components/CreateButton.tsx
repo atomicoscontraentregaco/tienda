@@ -230,7 +230,7 @@ export const CreateButton = () => {
         <button
             id="create-swap-button"
             class={buttonClass()}
-            disabled={buttonDisable()}
+            disabled={buttonDisable() || !wasmSupported() || !online()}
             onClick={buttonClick}>
             {getButtonLabel(buttonLabel())}
         </button>
