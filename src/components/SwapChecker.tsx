@@ -4,9 +4,14 @@ import { createEffect, createSignal } from "solid-js";
 import { RBTC } from "../consts";
 import { useGlobalContext } from "../context/Global";
 import { usePayContext } from "../context/Pay";
+import { getReverseTransaction } from "../utils/boltzClient";
 import { claim } from "../utils/claim";
 import { fetcher, getApiUrl } from "../utils/helper";
-import { swapStatusFinal, swapStatusPending } from "../utils/swapStatus";
+import {
+    swapStatusFinal,
+    swapStatusPending,
+    swapStatusSuccess,
+} from "../utils/swapStatus";
 
 export const [checkInterval, setCheckInterval] = createSignal<
     NodeJS.Timer | undefined
@@ -64,13 +69,28 @@ export const SwapChecker = () => {
         if (data.failureReason) setFailureReason(data.failureReason);
     };
 
-    const claimSwap = async (data: any, activeSwap: any) => {
-        const currentSwap = swaps().find((s) => activeSwap.id === s.id);
+    const claimSwap = async (swapId: string, data: any) => {
+        const currentSwap = swaps().find((s) => swapId === s.id);
+        if (currentSwap === undefined) {
+            log.warn(`claimSwap: swap ${swapId} not found`);
+            return;
+        }
+
+        if (data.status === swapStatusSuccess.InvoiceSettled) {
+            data.transaction = await getReverseTransaction(
+                currentSwap.asset,
+                currentSwap.id,
+            );
+        }
+
         if (
             currentSwap.claimTx === undefined &&
             data.transaction !== undefined &&
-            (data.status === swapStatusPending.TransactionConfirmed ||
-                data.status === swapStatusPending.TransactionMempool)
+            [
+                swapStatusPending.TransactionConfirmed,
+                swapStatusPending.TransactionMempool,
+                swapStatusSuccess.InvoiceSettled,
+            ].includes(data.status)
         ) {
             try {
                 const res = await claim(currentSwap, data.transaction);
@@ -87,7 +107,12 @@ export const SwapChecker = () => {
 
     const runSwapCheck = async () => {
         const swapsToCheck = swaps()
-            .filter((s) => !swapStatusFinal.includes(s.status))
+            .filter(
+                (s) =>
+                    !swapStatusFinal.includes(s.status) ||
+                    (s.status === swapStatusSuccess.InvoiceSettled &&
+                        s.claimTx === undefined),
+            )
             .filter((s) => s.id !== swap()?.id);
 
         for (const swap of swapsToCheck) {
@@ -95,7 +120,7 @@ export const SwapChecker = () => {
                 const res = await fetcher("/swapstatus", swap.asset, {
                     id: swap.id,
                 });
-                await claimSwap(res, swap);
+                await claimSwap(swap.id, res);
             } catch (e) {
                 log.debug("swapchecker failed to claim swap", e);
             }
@@ -126,7 +151,7 @@ export const SwapChecker = () => {
             }`,
             (data) => {
                 prepareSwap(data, activeSwap);
-                claimSwap(data, activeSwap);
+                claimSwap(activeSwap.id, data);
             },
         );
     });

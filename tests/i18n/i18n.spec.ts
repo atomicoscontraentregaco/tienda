@@ -17,14 +17,20 @@ describe("i18n", () => {
 
                 compSet.forEach((val) => langSet.delete(val));
 
-                expect(
-                    Array.from(langSet.values()),
+                const missing = Array.from(langSet.values());
+                if (missing.length === 0) {
+                    continue;
+                }
+
+                console.log(
                     `${JSON.stringify(
                         Array.from(langSet.values()),
                         undefined,
                         2,
                     )} missing from ${comp}`,
-                ).toEqual([]);
+                );
+
+                expect(Array.from(langSet.values())).toEqual([]);
             }
         }
     });
