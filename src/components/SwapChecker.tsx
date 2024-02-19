@@ -12,6 +12,7 @@ import {
     swapStatusPending,
     swapStatusSuccess,
 } from "../utils/swapStatus";
+import { OutputType } from "boltz-core";
 
 export const [checkInterval, setCheckInterval] = createSignal<
     NodeJS.Timer | undefined
@@ -76,7 +77,7 @@ export const SwapChecker = () => {
             return;
         }
 
-        if (data.status === swapStatusSuccess.InvoiceSettled) {
+        if (data.status === swapStatusSuccess.InvoiceSettled && currentSwap.version === OutputType.Taproot) {
             data.transaction = await getReverseTransaction(
                 currentSwap.asset,
                 currentSwap.id,
