@@ -1,3 +1,4 @@
+import { OutputType } from "boltz-core";
 import log from "loglevel";
 import { createEffect, createSignal } from "solid-js";
 
@@ -12,7 +13,6 @@ import {
     swapStatusPending,
     swapStatusSuccess,
 } from "../utils/swapStatus";
-import { OutputType } from "boltz-core";
 
 export const [checkInterval, setCheckInterval] = createSignal<
     NodeJS.Timer | undefined
@@ -77,7 +77,11 @@ export const SwapChecker = () => {
             return;
         }
 
-        if (data.status === swapStatusSuccess.InvoiceSettled && currentSwap.version === OutputType.Taproot) {
+        if (
+            data.status === swapStatusSuccess.InvoiceSettled &&
+            currentSwap.claimTx === undefined &&
+            currentSwap.version === OutputType.Taproot
+        ) {
             data.transaction = await getReverseTransaction(
                 currentSwap.asset,
                 currentSwap.id,
@@ -101,6 +105,21 @@ export const SwapChecker = () => {
                 setSwaps(swapsTmp);
                 notify("success", `swap ${res.id} claimed`);
             } catch (e) {
+                if (e.json !== undefined) {
+                    if (
+                        (await e.json()).error ===
+                        "bad-txns-inputs-missingorspent"
+                    ) {
+                        const swapsTmp = swaps();
+                        const claimedSwap = swapsTmp.find(
+                            (s) => swapId === s.id,
+                        );
+                        claimedSwap.claimTx = data.transaction.id;
+                        setSwaps(swapsTmp);
+                        return;
+                    }
+                }
+
                 log.debug("swapchecker failed to claim swap", e);
             }
         }
