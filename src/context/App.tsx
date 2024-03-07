@@ -10,15 +10,15 @@ import {
     useContext,
 } from "solid-js";
 
-import { RBTC } from "../consts";
+import { BTC, LBTC, RBTC } from "../consts";
 import { getPairs } from "../utils/boltzApi";
 import { isBoltzClient } from "../utils/helper";
-import { moduleLoaded, swapChecker } from "../utils/lazy";
 import { swapStatusFinal } from "../utils/swapStatus";
 import { useCreateContext } from "./Create";
 import { useGlobalContext } from "./Global";
 import { usePayContext } from "./Pay";
 import { useWeb3Signer } from "./Web3";
+import { createSwapChecker } from "../utils/swapchecker";
 
 export type AppContextType = {
     swap: Accessor<any>;
@@ -80,7 +80,7 @@ const AppProvider = (props: { children: any }) => {
 
     const navigate = useNavigate();
 
-    import("../utils/lazy/create").then((create) => {
+    import("../utils/create").then((create) => {
         setBackend((backend) => {
             backend.createSwap = async () => {
                 const data = await create.default(
@@ -117,6 +117,7 @@ const AppProvider = (props: { children: any }) => {
         fetchPairs: (asset) => getPairs(asset),
         SwapStatusPage: lazy(() => import("../pages/AppPay")),
         SwapHistory: lazy(() => import("../components/WebHistory")),
+        availableAssets: () => [BTC, LBTC],
     });
 
     const value = {
@@ -132,9 +133,7 @@ const AppProvider = (props: { children: any }) => {
     const payContext = usePayContext();
 
     createEffect(() => {
-        if (moduleLoaded(swapChecker)()) {
-            swapChecker.createSwapChecker(payContext, globalContext, value);
-        }
+        createSwapChecker(payContext, globalContext, value);
     });
 
     return (

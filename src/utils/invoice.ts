@@ -3,8 +3,8 @@ import { BigNumber } from "bignumber.js";
 import bolt11 from "bolt11";
 import log from "loglevel";
 
-import { config } from "../../config";
-import { checkResponse } from "../http";
+import { config } from "../config";
+import { checkResponse } from "./http";
 
 type LnurlResponse = {
     minSendable: number;

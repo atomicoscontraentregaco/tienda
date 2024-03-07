@@ -15,7 +15,6 @@ import {
 } from "../src/context/Global";
 import { PayContextType, PayProvider, usePayContext } from "../src/context/Pay";
 import { Web3SignerProvider } from "../src/context/Web3";
-import { loadLazyModules } from "../src/utils/lazy";
 
 export let signals: CreateContextType;
 export let globalSignals: GlobalContextType;
@@ -39,8 +38,6 @@ export const initConfig = () => {
 
 initConfig();
 export { config };
-
-loadLazyModules();
 
 export const contextWrapper = (props: any) => {
     const Provider = AppProvider;

@@ -7,7 +7,7 @@ import {
     getExpiryEtaHours,
     isBip21,
     isLnurl,
-} from "../../src/utils/lazy/invoice";
+} from "../../src/utils/invoice";
 
 describe("invoice", () => {
     test.each`

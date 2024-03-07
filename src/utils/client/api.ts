@@ -1,11 +1,12 @@
 import { type NormalizeOAS, OASModel, createClient } from "fets";
-import { config, configReady } from "src/config";
+import { config, configReady } from "../../config";
 
 import type openapi from "./openapi";
 
 type oas = NormalizeOAS<typeof openapi>;
 
 export type Status = OASModel<oas, "Status">;
+// @ts-ignore
 export type Model<T> = OASModel<oas, T>;
 export type Wallet = OASModel<oas, "Wallet">;
 
@@ -36,15 +37,17 @@ export const fetchPairs = async () => {
 export const client = () =>
     configReady()
         ? createClient<oas>({
+            // @ts-ignore
             endpoint: config().boltzClientApiUrl,
             plugins: [
                 {
                     onResponse: async ({ response }) => {
+                        /*
                         if (!response.ok) {
                             const error = await response.json();
                             throw new Error(error.message);
                         }
-                        return Promise.reject(response);
+                         */
                     },
                 },
             ],

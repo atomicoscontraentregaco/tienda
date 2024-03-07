@@ -2,11 +2,11 @@ import { crypto } from "bitcoinjs-lib";
 import { OutputType } from "boltz-core";
 import { randomBytes } from "crypto";
 
-import { BTC, RBTC } from "../../consts";
-import { CreateContextType } from "../../context/Create";
-import { GlobalContextType } from "../../context/Global";
-import { fetcher, getPairs } from "../boltzApi";
-import { getPair } from "../helper";
+import { BTC, RBTC } from "../consts";
+import { CreateContextType } from "../context/Create";
+import { GlobalContextType } from "../context/Global";
+import { fetcher, getPairs } from "./boltzApi";
+import { getPair } from "./helper";
 import { ECPair } from "./ecpair";
 import { extractAddress } from "./invoice";
 import { ContractGetter, validateResponse } from "./validation";

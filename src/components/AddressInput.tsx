@@ -1,12 +1,13 @@
-import { createEffect, on } from "solid-js";
+import { Accessor, createEffect, on } from "solid-js";
 
 import { RBTC } from "../consts";
 import { useCreateContext } from "../context/Create";
 import { useGlobalContext } from "../context/Global";
-import { invoice, moduleLoaded, address as util } from "../utils/lazy";
+import { decodeAddress } from "../utils/address";
+import { extractAddress } from "../utils/invoice";
 import { setButtonLabel } from "./CreateButton";
 
-const AddressInput = ({ allowEmpty }: { allowEmpty?: boolean }) => {
+const AddressInput = ({ allowEmpty }: { allowEmpty?: Accessor<boolean> }) => {
     let inputRef: HTMLInputElement;
 
     const { t } = useGlobalContext();
@@ -20,19 +21,19 @@ const AddressInput = ({ allowEmpty }: { allowEmpty?: boolean }) => {
         setOnchainAddress,
     } = useCreateContext();
 
-    const loaded = moduleLoaded(util, invoice);
-
     const validateAddress = (input: HTMLInputElement) => {
-        if (!loaded()) return;
+        console.log("am validatin");
+
         const inputValue = input.value.trim();
-        const address = invoice.extractAddress(inputValue);
+        const address = extractAddress(inputValue);
 
         try {
-            if (address == "" && allowEmpty) {
+            if (address == "" && allowEmpty()) {
+                console.log("valid");
                 setAddressValid(true);
             } else {
                 const assetName = asset();
-                util.decodeAddress(assetName, address);
+                decodeAddress(assetName, address);
                 input.setCustomValidity("");
                 input.classList.remove("invalid");
                 setAddressValid(true);
@@ -67,7 +68,6 @@ const AddressInput = ({ allowEmpty }: { allowEmpty?: boolean }) => {
             onInput={(e) => validateAddress(e.currentTarget)}
             onKeyUp={(e) => validateAddress(e.currentTarget)}
             onPaste={(e) => validateAddress(e.currentTarget)}
-            disabled={!loaded()}
             type="text"
             id="onchainAddress"
             data-testid="onchainAddress"

@@ -13,8 +13,8 @@ import { ECPairInterface } from "ecpair";
 import { BaseContract } from "ethers";
 import log from "loglevel";
 
-import { RBTC } from "../../consts";
-import { denominations, formatAmountDenomination } from "../denomination";
+import { RBTC } from "../consts";
+import { denominations, formatAmountDenomination } from "./denomination";
 import { decodeAddress } from "./address";
 import { setup } from "./compat";
 import { ECPair, ecc } from "./ecpair";

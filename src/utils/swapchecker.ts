@@ -1,21 +1,21 @@
 import log from "loglevel";
 import { createEffect, onCleanup } from "solid-js";
 
-import { configReady } from "../../config";
-import { BTC, LBTC, RBTC } from "../../consts";
-import { AppContextType } from "../../context/App";
-import { GlobalContextType } from "../../context/Global";
-import { PayContextType } from "../../context/Pay";
+import { configReady } from "../config";
+import { BTC, LBTC, RBTC } from "../consts";
+import { AppContextType } from "../context/App";
+import { GlobalContextType } from "../context/Global";
+import { PayContextType } from "../context/Pay";
 import {
     getApiUrl,
     getReverseTransaction,
     getSubmarineTransaction,
-} from "../boltzApi";
+} from "./boltzApi";
 import {
     swapStatusFinal,
     swapStatusPending,
     swapStatusSuccess,
-} from "../swapStatus";
+} from "./swapStatus";
 
 const reconnectInterval = 5_000;
 

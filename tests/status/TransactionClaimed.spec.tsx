@@ -4,12 +4,12 @@ import { BTC, LBTC, RBTC } from "../../src/consts";
 import i18n from "../../src/i18n/i18n";
 import TransactionClaimed from "../../src/status/TransactionClaimed";
 import { getReverseTransaction } from "../../src/utils/boltzApi";
-import { claim } from "../../src/utils/lazy/claim";
+import { claim } from "../../src/utils/claim";
 import { TestComponent, contextWrapper, swapContext } from "../helper";
 
 let claimPromiseResolve: (() => void) | undefined = undefined;
 
-jest.mock("../../src/utils/lazy/claim", () => ({
+jest.mock("../../src/utils/claim", () => ({
     claim: jest.fn().mockImplementation(
         async (swap) =>
             new Promise<void>((resolve) => {

@@ -37,11 +37,6 @@ export const ClientPay = (params: { id: string }) => {
             config().boltzClientApiUrl + `/v1/swap/${params.id}/stream`,
         );
 
-        if (!response.ok) {
-            setNotFound(true);
-            return;
-        }
-
         const reader = response.body.getReader();
         setReader(reader);
 
@@ -52,12 +47,13 @@ export const ClientPay = (params: { id: string }) => {
                 console.log(response);
                 break;
             }
-
             const updates = new TextDecoder()
                 .decode(value.value)
                 .split("\n")
                 .filter((m) => m.length)
                 .map((m) => JSON.parse(m));
+
+            console.log(updates);
 
             const update = updates[updates.length - 1];
             const swap = update.result.swap || update.result.reverseSwap;
@@ -160,7 +156,6 @@ export const ClientPay = (params: { id: string }) => {
                     <Show when={swapStatus() == "swap.created"}>
                         <SwapCreated invoice={swap().invoice} />
                     </Show>
-
                     <Show
                         when={
                             swapStatus() !== null &&

@@ -10,7 +10,7 @@ import { ECPairInterface } from "ecpair";
 import { Network as LiquidNetwork } from "liquidjs-lib/src/networks";
 import log from "loglevel";
 
-import { LBTC } from "../../consts";
+import { LBTC } from "../consts";
 import { DecodedAddress, decodeAddress, getNetwork } from "./address";
 import {
     TransactionInterface,
@@ -19,7 +19,7 @@ import {
     getPartialRefundSignature,
 } from "./boltzClient";
 import { getConstructRefundTransaction, getTransaction, setup } from "./compat";
-import { parseBlindingKey, parsePrivateKey } from "./helper";
+import { parseBlindingKey, parsePrivateKey } from "./ecpair";
 import { createMusig, hashForWitnessV1, tweakMusig } from "./taproot/musig";
 
 export const refundJsonKeys = ["id", "asset", "privateKey"];

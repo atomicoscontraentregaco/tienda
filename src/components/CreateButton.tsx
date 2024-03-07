@@ -1,9 +1,9 @@
 import log from "loglevel";
-import { createEffect, createSignal } from "solid-js";
+import { createEffect,  createSignal } from "solid-js";
 
 import { useCreateContext } from "../context/Create";
 import { useGlobalContext } from "../context/Global";
-import { invoice, modulesLoaded } from "../utils/lazy";
+import { fetchLnurl } from "../utils/invoice";
 
 type buttonLabelParams = {
     key: string;
@@ -31,6 +31,7 @@ export const CreateButton = () => {
     const buttonClass = () => (!online() ? "btn btn-danger" : "btn");
 
     const validateButtonDisable = () => {
+        console.log(amountValid(), valid())
         return !valid() && !(lnurl() !== "" && amountValid());
     };
 
@@ -39,6 +40,7 @@ export const CreateButton = () => {
     });
 
     createEffect(() => {
+        console.log("is valid", valid())
         if (valid()) {
             if (reverse() && lnurl()) {
                 setButtonLabel({ key: "fetch_lnurl" });
@@ -56,7 +58,7 @@ export const CreateButton = () => {
     const buttonClick = async () => {
         if (amountValid() && !reverse() && lnurl() !== "") {
             try {
-                const inv = await invoice.fetchLnurl(
+                const inv = await fetchLnurl(
                     lnurl(),
                     Number(receiveAmount()),
                 );
@@ -80,7 +82,7 @@ export const CreateButton = () => {
             id="create-swap-button"
             data-testid="create-swap-button"
             class={buttonClass()}
-            disabled={buttonDisable() || !online() || !modulesLoaded()}
+            disabled={buttonDisable() || !online()}
             onClick={buttonClick}>
             {t(buttonLabel().key, buttonLabel().params)}
         </button>

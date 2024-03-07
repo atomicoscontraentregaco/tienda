@@ -1,3 +1,4 @@
+import { prefix0x, satoshiToWei } from "../utils/rootstock";
 import ContractTransaction from "../components/ContractTransaction";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { RBTC } from "../consts";
@@ -6,7 +7,6 @@ import { useGlobalContext } from "../context/Global";
 import { usePayContext } from "../context/Pay";
 import { useWeb3Signer } from "../context/Web3";
 import { isBoltzClient } from "../utils/helper";
-import { rootstock } from "../utils/lazy";
 
 const ClaimRootstock = () => {
     const { t } = useGlobalContext();
@@ -21,8 +21,8 @@ const ClaimRootstock = () => {
                 const tx = await contract[
                     "claim(bytes32,uint256,address,uint256)"
                 ](
-                    rootstock.prefix0x(swap().preimage),
-                    rootstock.satoshiToWei(swap().onchainAmount),
+                    prefix0x(swap().preimage),
+                    satoshiToWei(swap().onchainAmount),
                     swap().refundAddress,
                     swap().timeoutBlockHeight,
                 );

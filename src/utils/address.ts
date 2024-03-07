@@ -5,8 +5,8 @@ import {
 } from "liquidjs-lib";
 import { Network as LiquidNetwork } from "liquidjs-lib/src/networks";
 
-import { config } from "../../config";
-import { LBTC } from "../../consts";
+import { config } from "../config";
+import { LBTC } from "../consts";
 
 type DecodedAddress = { script: Buffer; blindingKey?: Buffer };
 

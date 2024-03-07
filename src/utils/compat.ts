@@ -23,7 +23,7 @@ import {
 } from "liquidjs-lib";
 import { Network as LiquidNetwork } from "liquidjs-lib/src/networks";
 
-import { LBTC } from "../../consts";
+import { LBTC } from "../consts";
 
 type LiquidTransactionOutputWithKey = LiquidTransactionOutput & {
     blindingPrivateKey?: Buffer;

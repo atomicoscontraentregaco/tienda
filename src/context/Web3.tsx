@@ -1,4 +1,4 @@
-import type { BrowserProvider, JsonRpcSigner } from "ethers";
+import { BrowserProvider, Contract, JsonRpcSigner } from "ethers";
 import {
     Accessor,
     JSXElement,
@@ -12,8 +12,8 @@ import { config, configReady } from "../config";
 import { RBTC } from "../consts";
 import { getContracts } from "../utils/boltzApi";
 import { isBoltzClient } from "../utils/helper";
-import { ethers, moduleLoaded, rootstock } from "../utils/lazy";
 import type { Contracts, EtherSwap } from "../utils/types";
+import { EtherSwapAbi } from "../utils/rootstock";
 
 // TODO: check network and add option to add RSK as network
 // TODO: handle network and account change events
@@ -39,20 +39,17 @@ const Web3SignerProvider = (props: {
     const hasRsk = () => configReady() && config().assets[RBTC] !== undefined;
 
     createEffect(() => {
-        if (moduleLoaded(ethers)()) {
             if ((window as any).ethereum) {
                 handleMetamask();
             } else {
                 window.addEventListener(initEvent, handleMetamask);
             }
-        }
     });
 
     const handleMetamask = () => {
         window.removeEventListener(initEvent, handleMetamask);
         if (hasRsk()) {
-            console.log(ethers.BrowserProvider);
-            setProvider(new ethers.BrowserProvider((window as any).ethereum));
+            setProvider(new BrowserProvider((window as any).ethereum));
         }
         setHasMetamask(true);
     };
@@ -78,9 +75,9 @@ const Web3SignerProvider = (props: {
 
     const getEtherSwap = async () => {
         await getSigner();
-        return new ethers.Contract(
+        return new Contract(
             (await fetchContracts).swapContracts.EtherSwap,
-            rootstock.EtherSwapAbi,
+            EtherSwapAbi,
             signer(),
         ) as unknown as EtherSwap;
     };

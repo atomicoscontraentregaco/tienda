@@ -21,6 +21,8 @@ export type ClientContextType = {
     info: CreateQueryResult<any>;
     acceptZeroConf: Accessor<boolean>;
     setAcceptZeroConf: Setter<boolean>;
+    autoSend: Accessor<boolean>;
+    setAutoSend: Setter<boolean>;
 };
 
 type Currency = "BTC" | "LBTC";
@@ -35,7 +37,7 @@ export const currencyToAsset = (currency: Currency): string =>
 
 const ClientProvider = (props: { children: any }) => {
     const [acceptZeroConf, setAcceptZeroConf] = createSignal(false);
-    const [autoSend, setAutoSend] = createSignal(false);
+    const [autoSend, setAutoSend] = createSignal(true);
 
     const { setHideHero, setBackend, setOnline, notify } = useGlobalContext();
     setHideHero(true);
@@ -53,8 +55,8 @@ const ClientProvider = (props: { children: any }) => {
                     amount: sendAmount().toString(),
                     acceptZeroConf: acceptZeroConf(),
                     pair: {
-                        from: assetToCurrency(asset()),
-                        to: BTC,
+                        from: BTC,
+                        to: assetToCurrency(asset()),
                     },
                     address: onchainAddress(),
                 },
@@ -70,8 +72,8 @@ const ClientProvider = (props: { children: any }) => {
                     amount: sendAmount().toString(),
                     autoSend: autoSend(),
                     pair: {
-                        from: BTC,
-                        to: assetToCurrency(asset()),
+                        from: assetToCurrency(asset()),
+                        to: BTC,
                     },
                     invoice: invoice(),
                 },
@@ -94,13 +96,29 @@ const ClientProvider = (props: { children: any }) => {
         SwapHistory: lazy(() => import("../components/ClientHistory")),
     });
 
+    const wallets = createQuery(() => ({
+        queryKey: ["wallets"],
+        queryFn: async () => {
+            console.log("wtf..");
+            const response = await client()["/v1/wallets"].get();
+            if (response.ok) {
+                console.log("wallets!");
+                const data = await response.json();
+                return data.wallets;
+            }
+            console.log(response);
+            throw new Error("Failed to fetch wallets");
+        },
+    }));
+
     const info = createQuery(() => ({
         queryKey: ["info"],
         queryFn: fetchInfo,
     }));
     createEffect(() => {
+        console.log(info.data);
         if (info.isError) {
-            setOnline(false);
+            //setOnline(false);
         }
         if (info.isSuccess) {
             setOnline(true);
@@ -109,20 +127,12 @@ const ClientProvider = (props: { children: any }) => {
     return (
         <ClientContext.Provider
             value={{
-                wallets: createQuery(() => ({
-                    queryKey: ["wallets"],
-                    queryFn: async () => {
-                        const response = await client()["/v1/wallets"].get();
-                        if (response.ok) {
-                            const data = await response.json();
-                            return data.wallets;
-                        }
-                        throw new Error("Failed to fetch wallets");
-                    },
-                })),
+                wallets,
                 info,
                 acceptZeroConf,
                 setAcceptZeroConf,
+                autoSend,
+                setAutoSend,
             }}>
             {props.children}
         </ClientContext.Provider>

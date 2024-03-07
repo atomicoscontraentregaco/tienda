@@ -9,34 +9,28 @@ import { useGlobalContext } from "../context/Global";
 import { usePayContext } from "../context/Pay";
 import { useWeb3Signer } from "../context/Web3";
 import { denominations, formatAmount } from "../utils/denomination";
-import {
-    clipboard,
-    cropString,
-    isBoltzClient,
-    isMobile,
-} from "../utils/helper";
-import { invoice, rootstock } from "../utils/lazy";
+import { clipboard, cropString, isBoltzClient, isMobile } from "../utils/helper";
+import { decodeInvoice } from "../utils/invoice";
+import { prefix0x, satoshiToWei } from "../utils/rootstock";
 
 const ClaimRootstock = () => {
     const { swap, swaps, setSwaps } = useAppContext();
     const { t } = useGlobalContext();
     const { getEtherSwap } = useWeb3Signer();
 
-    return (
-        <ContractTransaction
-            onClick={async () => {
-                const contract = await getEtherSwap();
+        return (
+            <ContractTransaction
+                onClick={async () => {
+                    const contract = await getEtherSwap();
 
-                const tx = await contract.lock(
-                    rootstock.prefix0x(
-                        invoice.decodeInvoice(swap().invoice).preimageHash,
-                    ),
-                    swap().claimAddress,
-                    swap().timeoutBlockHeight,
-                    {
-                        value: rootstock.satoshiToWei(swap().expectedAmount),
-                    },
-                );
+                    const tx = await contract.lock(
+                        prefix0x(decodeInvoice(swap().invoice).preimageHash),
+                        swap().claimAddress,
+                        swap().timeoutBlockHeight,
+                        {
+                            value: satoshiToWei(swap().expectedAmount),
+                        },
+                    );
 
                 const swapsTmp = swaps();
                 const currentSwap = swapsTmp.find((s) => swap().id === s.id);

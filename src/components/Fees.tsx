@@ -45,9 +45,11 @@ const Fees = () => {
             if (reverse()) {
                 const reverseCfg = cfg as ReversePairTypeTaproot;
 
+                console.log(reverseCfg)
+
                 const fee =
-                    reverseCfg.fees.minerFees.claim +
-                    reverseCfg.fees.minerFees.lockup;
+                    Number(reverseCfg.fees.minerFees.claim) +
+                    Number(reverseCfg.fees.minerFees.lockup);
 
                 setBoltzFee(reverseCfg.fees.percentage);
                 setMinerFee(fee);

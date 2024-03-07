@@ -5,9 +5,9 @@ import { RBTC } from "../consts";
 import { useCreateContext } from "../context/Create";
 import { useGlobalContext } from "../context/Global";
 import { calculateSendAmount } from "../utils/calculate";
-import { isBoltzClient } from "../utils/helper";
-import { moduleLoaded, invoice as util } from "../utils/lazy";
+import { decodeInvoice, extractInvoice, isLnurl, validateInvoice } from "../utils/invoice";
 import { setButtonLabel } from "./CreateButton";
+import { isBoltzClient } from "../utils/helper";
 
 const InvoiceInput = () => {
     let inputRef: HTMLTextAreaElement;
@@ -30,33 +30,30 @@ const InvoiceInput = () => {
         setSendAmount,
     } = useCreateContext();
 
-    const loaded = moduleLoaded(util);
-
     const validate = (input: HTMLTextAreaElement) => {
-        if (!loaded()) return;
-        const inputValue = util.extractInvoice(input.value.trim());
+        const inputValue = extractInvoice(input.value.trim());
         try {
-            if (isBoltzClient() && inputValue == "") {
-                setInvoiceValid(true);
+            if(inputValue == "" && isBoltzClient()) {
+                setInvoiceValid(true)
+                return
+            }
+            if (isLnurl(inputValue)) {
+                setButtonLabel({ key: "fetch_lnurl" });
+                setLnurl(inputValue);
             } else {
-                if (util.isLnurl(inputValue)) {
-                    setButtonLabel({ key: "fetch_lnurl" });
-                    setLnurl(inputValue);
-                } else {
-                    const sats = util.validateInvoice(inputValue);
-                    setReceiveAmount(BigNumber(sats));
-                    setSendAmount(
-                        calculateSendAmount(
-                            BigNumber(sats),
-                            boltzFee(),
-                            minerFee(),
-                            reverse(),
-                        ),
-                    );
-                    setInvoice(inputValue);
-                    setLnurl("");
-                    setInvoiceValid(true);
-                }
+                const sats = validateInvoice(inputValue);
+                setReceiveAmount(BigNumber(sats));
+                setSendAmount(
+                    calculateSendAmount(
+                        BigNumber(sats),
+                        boltzFee(),
+                        minerFee(),
+                        reverse(),
+                    ),
+                );
+                setInvoice(inputValue);
+                setLnurl("");
+                setInvoiceValid(true);
             }
             input.setCustomValidity("");
             input.classList.remove("invalid");
@@ -85,11 +82,11 @@ const InvoiceInput = () => {
             const amount = Number(receiveAmount());
             if (
                 invoice() !== "" &&
-                !util.isLnurl(invoice()) &&
+                !isLnurl(invoice()) &&
                 !receiveAmount().isZero()
             ) {
                 try {
-                    const inv = util.decodeInvoice(invoice());
+                    const inv = decodeInvoice(invoice());
                     if (inv.satoshis !== amount) {
                         setInvoice("");
                     }
@@ -107,7 +104,6 @@ const InvoiceInput = () => {
             onInput={(e) => validate(e.currentTarget)}
             onKeyUp={(e) => validate(e.currentTarget)}
             onPaste={(e) => validate(e.currentTarget)}
-            disabled={!loaded()}
             id="invoice"
             data-testid="invoice"
             name="invoice"

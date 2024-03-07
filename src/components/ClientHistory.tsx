@@ -1,10 +1,11 @@
 import { useNavigate } from "@solidjs/router";
 import { createQuery } from "@tanstack/solid-query";
 import { Match, Show, Switch } from "solid-js";
-import { client } from "src/utils/client/api";
 
+import { currencyToAsset } from "../context/Client";
 import { useGlobalContext } from "../context/Global";
-import SwapList from "./SwapList";
+import { client } from "../utils/client/api";
+import SwapList, { SwapInfo } from "./SwapList";
 
 const ClientHistory = () => {
     const navigate = useNavigate();
@@ -14,24 +15,33 @@ const ClientHistory = () => {
     const query = createQuery(() => ({
         queryKey: ["swaps"],
         queryFn: async () => {
-            const data = await client()["/v1/listswaps"].get();
+            const response = await client()["/v1/listswaps"].get();
 
-            const transform = (swap, reverse) => {
-                return {
-                    ...swap,
-                    asset: reverse ? swap.pair.to : swap.pair.from,
-                    reverse,
-                    date: swap.createdAt * 1000,
+            if (response.ok) {
+                const data = await response.json();
+                const transform = (swap: any, reverse: boolean): SwapInfo => {
+                    return {
+                        id: swap.id,
+                        asset: currencyToAsset(
+                            reverse ? swap.pair.to : swap.pair.from,
+                        ),
+                        reverse,
+                        date: swap.createdAt * 1000,
+                    };
                 };
-            };
 
-            const swaps = data.swaps.map((swap) => transform(swap, false));
-            swaps.concat(
-                data.reverseSwaps.map((swap) => transform(swap, true)),
-            );
+                const swaps = data.swaps
+                    .map((swap) => transform(swap, false))
+                    .concat(
+                        ...data.reverseSwaps.map((swap) =>
+                            transform(swap, true),
+                        ),
+                    );
 
-            console.log(swaps);
-            return swaps;
+                console.log(swaps);
+                return swaps;
+            }
+            return [];
         },
     }));
 
@@ -54,12 +64,7 @@ const ClientHistory = () => {
                                     </button>
                                 </div>
                             }>
-                            <SwapList
-                                swapsSignal={() => query.data}
-                                deleteSwap={(swapId) => {
-                                    console.log("delete", swapId);
-                                }}
-                            />
+                            <SwapList swapsSignal={() => query.data} />
                             <hr />
                         </Show>
                     </Match>

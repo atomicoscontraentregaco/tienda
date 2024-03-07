@@ -1,7 +1,10 @@
+import ecc from "@bitcoinerlab/secp256k1";
+import { initEccLib } from "bitcoinjs-lib";
+import { ECPairFactory, ECPairInterface } from "ecpair";
 import { Buffer } from "buffer";
-import { ECPairInterface } from "ecpair";
 
-import { ECPair } from "./ecpair";
+initEccLib(ecc);
+const ECPair = ECPairFactory(ecc);
 
 export const parseBlindingKey = (swap: { blindingKey: string | undefined }) => {
     return swap.blindingKey ? Buffer.from(swap.blindingKey, "hex") : undefined;
@@ -15,3 +18,5 @@ export const parsePrivateKey = (privateKey: string): ECPairInterface => {
         return ECPair.fromWIF(privateKey);
     }
 };
+
+export { ECPair, ecc };

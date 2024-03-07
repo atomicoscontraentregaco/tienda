@@ -6,7 +6,7 @@ import {
     decodeInvoice,
     extractInvoice,
     invoicePrefix,
-} from "../../src/utils/lazy/invoice";
+} from "../../src/utils/invoice";
 import { TestComponent, contextWrapper, createContext } from "../helper";
 
 describe("InvoiceInput", () => {

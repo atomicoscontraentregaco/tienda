@@ -1,22 +1,21 @@
-import type { TransactionResponse } from "ethers";
+import { Signature, TransactionResponse } from "ethers";
+import { Network as LiquidNetwork } from "liquidjs-lib/src/networks";
 import log from "loglevel";
 import { Accessor, Setter, createSignal } from "solid-js";
 
 import { RBTC } from "../consts";
-import { useAppContext } from "../context/App";
 import { useGlobalContext } from "../context/Global";
 import { useWeb3Signer } from "../context/Web3";
-import { getSubmarineTransaction } from "../utils/boltzApi";
 import {
-    address,
-    client,
-    ethers,
-    invoice,
-    refund,
-    rootstock,
-} from "../utils/lazy";
-import { LiquidNetwork } from "../utils/types";
+    getSubmarineEipSignature,
+} from "../utils/boltzClient";
+import { decodeInvoice } from "../utils/invoice";
+import { refund } from "../utils/refund";
+import { prefix0x, satoshiToWei } from "../utils/rootstock";
 import ContractTransaction from "./ContractTransaction";
+import { getAddress, getNetwork } from "../utils/address";
+import { useAppContext } from "../context/App";
+import { getSubmarineTransaction } from "../utils/boltzApi";
 
 const RefundButton = ({
     swap,
@@ -54,8 +53,8 @@ const RefundButton = ({
                     ]);
 
                     const currentSwap = swap();
-                    const preimageHash = rootstock.prefix0x(
-                        invoice.decodeInvoice(currentSwap.invoice).preimageHash,
+                    const preimageHash = prefix0x(
+                        decodeInvoice(currentSwap.invoice).preimageHash,
                     );
 
                     let tx: TransactionResponse;
@@ -66,21 +65,20 @@ const RefundButton = ({
                     ) {
                         tx = await contract.refund(
                             preimageHash,
-                            rootstock.satoshiToWei(currentSwap.expectedAmount),
+                            satoshiToWei(currentSwap.expectedAmount),
                             currentSwap.claimAddress,
                             currentSwap.timeoutBlockHeight,
                         );
                     } else {
-                        const { signature } =
-                            await client.getSubmarineEipSignature(
-                                currentSwap.asset,
-                                currentSwap.id,
-                            );
-                        const decSignature = ethers.Signature.from(signature);
+                        const { signature } = await getSubmarineEipSignature(
+                            currentSwap.asset,
+                            currentSwap.id,
+                        );
+                        const decSignature = Signature.from(signature);
 
                         tx = await contract.refundCooperative(
                             preimageHash,
-                            rootstock.satoshiToWei(currentSwap.expectedAmount),
+                            satoshiToWei(currentSwap.expectedAmount),
                             currentSwap.claimAddress,
                             currentSwap.timeoutBlockHeight,
                             decSignature.v,
@@ -104,12 +102,10 @@ const RefundButton = ({
         const input = evt.currentTarget as HTMLInputElement;
         const inputValue = input.value.trim();
         try {
-            address
-                .getAddress(asset)
-                .toOutputScript(
-                    inputValue,
-                    address.getNetwork(asset) as LiquidNetwork,
-                );
+            getAddress(asset).toOutputScript(
+                inputValue,
+                getNetwork(asset) as LiquidNetwork,
+            );
             input.setCustomValidity("");
             setRefundAddress(inputValue);
             return true;
@@ -133,7 +129,7 @@ const RefundButton = ({
                 `got swap transaction for ${swap().id}`,
                 transactionToRefund,
             );
-            const res = await refund.refund(
+            const res = await refund(
                 swap(),
                 refundAddress(),
                 transactionToRefund,
@@ -218,4 +214,4 @@ const RefundButton = ({
     );
 };
 
-export default RefundButton;
+export default  RefundButton;

@@ -4,25 +4,29 @@ import { Accessor, For, Show, createMemo, createSignal } from "solid-js";
 import { useGlobalContext } from "../context/Global";
 import "../style/swaplist.scss";
 
+export interface SwapInfo {
+    id: string;
+    asset: string;
+    reverse: boolean;
+    date: number;
+}
+
 const SwapList = ({
     swapsSignal,
     deleteSwap,
 }: {
-    swapsSignal: Accessor<any[]>;
+    swapsSignal: Accessor<SwapInfo[]>;
     deleteSwap?: (swapId: string) => void;
 }) => {
     const navigate = useNavigate();
     const { t } = useGlobalContext();
-    const [sortedSwaps, setSortedSwaps] = createSignal([]);
-    const [lastSwap, setLastSwap] = createSignal();
 
-    createMemo(() => {
-        const sorted = swapsSignal().sort((a: any, b: any) =>
+    const sortedSwaps = () =>
+        swapsSignal().toSorted((a: any, b: any) =>
             a.date > b.date ? -1 : a.date === b.date ? 0 : 1,
         );
-        setSortedSwaps(sorted);
-        setLastSwap(sorted[sorted.length - 1]);
-    });
+
+    const lastSwap = () => sortedSwaps()[sortedSwaps().length - 1];
 
     const formatDate = (d: number) => {
         const date = new Date();

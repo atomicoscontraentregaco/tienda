@@ -7,7 +7,7 @@ import { useAppContext } from "../context/App";
 import { useGlobalContext } from "../context/Global";
 import { usePayContext } from "../context/Pay";
 import { isBoltzClient } from "../utils/helper";
-import { boltzCore } from "../utils/lazy";
+import { OutputType } from "boltz-core";
 
 const ShowTimeout = () => (
     <>
@@ -18,7 +18,7 @@ const ShowTimeout = () => (
 
 const Refund = () => {
     const { swap } = useAppContext();
-    const isTaproot = swap().version === boltzCore.OutputType.Taproot;
+    const isTaproot = swap().version === OutputType.Taproot;
     return (
         <Show when={isTaproot} fallback={<ShowTimeout />}>
             <RefundButton swap={swap} />

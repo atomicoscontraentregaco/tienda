@@ -3,8 +3,8 @@ import { Musig } from "boltz-core";
 import { Buffer } from "buffer";
 import { Transaction as LiquidTransaction } from "liquidjs-lib";
 
-import { fetcher } from "../boltzApi";
-import type { Pairs, PartialSignature } from "../types";
+import { fetcher } from "./boltzApi";
+import type { Pairs, PartialSignature } from "./types";
 
 type TransactionInterface = Transaction | LiquidTransaction;
 

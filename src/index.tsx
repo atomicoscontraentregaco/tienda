@@ -27,7 +27,6 @@ import Refund from "./pages/Refund";
 import RefundStep from "./pages/RefundStep";
 import "./style/index.scss";
 import { isBoltzClient } from "./utils/helper";
-import { loadLazyModules } from "./utils/lazy";
 import "./utils/patches";
 
 if ("serviceWorker" in navigator) {
@@ -49,7 +48,6 @@ const init = async () => {
     if (config) {
         updateConfig(config);
         delete window["config"];
-        await loadLazyModules();
     }
 };
 window.addEventListener("config", init);

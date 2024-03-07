@@ -15,26 +15,20 @@ const ClientInfo = () => {
     const { info } = useClientContext();
 
     return (
-        <Switch>
-            <Match when={info.isLoading}>
-                <div class="client-info">
-                    <h3>Client Info</h3>
+        <div class="client-info">
+            <h3>Connected to Boltz Client</h3>
+            <Switch>
+                <Match when={info.isLoading}>
                     <p>Loading...</p>
-                </div>
-            </Match>
-            <Match when={info.isError}>
-                <div class="client-info">
-                    <h3>Client Info</h3>
+                </Match>
+                <Match when={info.isError}>
                     <p>Error: {info.error.message}</p>
-                </div>
-            </Match>
-            <Match when={info.data}>
-                <div class="client-info">
-                    <h3>Client Info</h3>
+                </Match>
+                <Match when={info.data}>
                     <pre>{info.data.version}</pre>
-                </div>
-            </Match>
-        </Switch>
+                </Match>
+            </Switch>
+        </div>
     );
 };
 

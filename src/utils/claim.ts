@@ -10,7 +10,7 @@ import { ECPairInterface } from "ecpair";
 import { Network as LiquidNetwork } from "liquidjs-lib/src/networks";
 import log from "loglevel";
 
-import { LBTC, RBTC } from "../../consts";
+import { LBTC, RBTC } from "../consts";
 import { DecodedAddress, decodeAddress, getNetwork } from "./address";
 import {
     TransactionInterface,
@@ -25,7 +25,7 @@ import {
     getTransaction,
     setup,
 } from "./compat";
-import { parseBlindingKey, parsePrivateKey } from "./helper";
+import { parseBlindingKey, parsePrivateKey } from "./ecpair";
 import { decodeInvoice } from "./invoice";
 import { createMusig, hashForWitnessV1, tweakMusig } from "./taproot/musig";
 

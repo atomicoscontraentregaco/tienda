@@ -7,7 +7,7 @@ import { useAppContext } from "../context/App";
 import { useGlobalContext } from "../context/Global";
 import { getReverseTransaction } from "../utils/boltzApi";
 import { isBoltzClient } from "../utils/helper";
-import { claim } from "../utils/lazy";
+import { claim } from "../utils/claim";
 
 const Broadcasting = () => {
     const { t } = useGlobalContext();
@@ -44,7 +44,7 @@ const TransactionClaimed = () => {
             const toClaim = swap();
 
             if (toClaim && claimBroadcast() === false) {
-                await claim.claim(
+                await claim(
                     toClaim,
                     await getReverseTransaction(toClaim.asset, toClaim.id),
                 );

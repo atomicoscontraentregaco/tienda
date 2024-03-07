@@ -77,7 +77,13 @@ const CreateProvider = (props: { children: any }) => {
         name: "assetSend",
     });
 
-    createEffect(() => setReverse(assetReceive() !== LN));
+    createEffect(() => {
+        console.log("setting reverse")
+        console.log(assetReceive())
+        setReverse(assetReceive() !== LN)
+        console.log(reverse())
+    });
+
 
     [assetSend, assetReceive].forEach((signal) => {
         createEffect(() => {

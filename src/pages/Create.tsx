@@ -39,7 +39,13 @@ import ErrorWasm from "./ErrorWasm";
 const QrScan = lazy(() => import("../components/QrScan"));
 
 const ClientInputs = () => {
-    const { wallets, acceptZeroConf, setAcceptZeroConf } = useClientContext();
+    const {
+        wallets,
+        acceptZeroConf,
+        setAcceptZeroConf,
+        autoSend,
+        setAutoSend,
+    } = useClientContext();
     const { reverse, asset } = useCreateContext();
     const { webln } = useGlobalContext();
 
@@ -54,16 +60,7 @@ const ClientInputs = () => {
 
     return (
         <>
-            <Show when={availableWallets()?.length > 0}>
-                <select>
-                    <For each={availableWallets()}>
-                        {(wallet: any) => (
-                            <option value={wallet.id}>{wallet.name}</option>
-                        )}
-                    </For>
-                </select>
-            </Show>
-            <Show when={reverse()}>
+            <Show when={!reverse()}>
                 <Show when={webln()}>
                     <WeblnButton />
                     <hr class="spacer" />
@@ -71,21 +68,13 @@ const ClientInputs = () => {
                 <InvoiceInput />
                 <input
                     type="checkbox"
-                    checked={acceptZeroConf()}
-                    onchange={(e) => setAcceptZeroConf(e.currentTarget.checked)}
+                    checked={autoSend()}
+                    onchange={(e) => setAutoSend(e.currentTarget.checked)}
                 />
             </Show>
-            <Show when={!reverse()}>
-                <div>
-                    <input
-                        type="checkbox"
-                        checked={acceptZeroConf()}
-                        onChange={(e) =>
-                            setAcceptZeroConf(e.currentTarget.checked)
-                        }
-                    />
-                </div>
-                <AddressInput allowEmpty={allowEmpty()} />
+            <Show when={reverse()}>
+                <hr class="spacer" />
+                <AddressInput allowEmpty={allowEmpty} />
             </Show>
         </>
     );
@@ -234,8 +223,10 @@ const Create = () => {
             setCustomValidity(errorMsg, amount === 0);
             setButtonLabel({ key: label, params: params });
             setAmountValid(false);
+            console.log("amount: ", amountValid());
             return;
         }
+        console.log("amount: ", amountValid());
         setAmountValid(true);
     };
 
@@ -312,14 +303,22 @@ const Create = () => {
     });
 
     // validation swap
-    createMemo(() => {
+    createEffect(() => {
         if (amountValid()) {
+            console.log("amount valid");
+            console.log(
+                "address valid",
+                addressValid(),
+                reverse(),
+                invoiceValid(),
+            );
             if (
                 (reverse() && addressValid()) ||
                 (!reverse() &&
                     invoiceValid() &&
                     (asset() !== RBTC || addressValid()))
             ) {
+                console.log("totally valid");
                 setValid(true);
                 return;
             }
