@@ -11,7 +11,7 @@ export const isDeployRequest = (request: Record<string, any>): boolean => {
 export const calculateGasPrice = (
     gasPrice: number | string | bigint,
     minGasPrice: string,
-): BigInt => {
+): bigint => {
     const bigGasPrice = BigInt(gasPrice);
     const bigMinGasPrice = BigInt(minGasPrice);
 
