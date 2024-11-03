@@ -34,8 +34,8 @@ export const connect = async (
 ) => {
     try {
         if (derivationPath !== undefined) {
-            const prov = providers()[provider.rdns]
-                .provider as unknown as HardwareSigner;
+            const prov = await providers()[provider.rdns]
+                .provider.get() as unknown as HardwareSigner;
             prov.setDerivationPath(derivationPath);
         }
 

@@ -3,11 +3,12 @@ import type {
     Response,
     SuccessWithDevice,
 } from "@trezor/connect/lib/types/params";
+import { LoadType } from "./Loader";
 
-import Loader from "./Loader";
-
-export default new Loader("Trezor", async () => {
+export const load = async () => {
     return (await import("@trezor/connect-web")).default;
-});
+}
+
+export type TrezorConnect = LoadType<typeof load>;
 
 export { Address, Unsuccessful, Response, SuccessWithDevice };

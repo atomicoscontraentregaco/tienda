@@ -23,6 +23,7 @@ import TrezorSigner from "../utils/hardware/TrezorSigner";
 import { useGlobalContext } from "./Global";
 import LedgerIcon from "/ledger.svg";
 import TrezorIcon from "/trezor.svg";
+import Loader from "../lazy/Loader";
 
 declare global {
     interface WindowEventMap {
@@ -86,7 +87,7 @@ const Web3SignerProvider = (props: {
         Record<string, EIP6963ProviderDetail>
     >({
         [HardwareRdns.Ledger]: {
-            provider: new LedgerSigner(t),
+            provider: LedgerSigner.loader(t),
             info: {
                 name: "Ledger",
                 uuid: "ledger",
@@ -97,7 +98,7 @@ const Web3SignerProvider = (props: {
             },
         },
         [HardwareRdns.Trezor]: {
-            provider: new TrezorSigner(),
+            provider: TrezorSigner.loader,
             info: {
                 name: "Trezor",
                 uuid: "trezor",
@@ -117,7 +118,7 @@ const Web3SignerProvider = (props: {
             setProviders({
                 ...providers(),
                 [browserRdns]: {
-                    provider: window.ethereum,
+                    provider: new Loader("Ethereum", async () => window.ethereum),
                     info: {
                         name: "Browser native",
                         uuid: browserRdns,
@@ -141,7 +142,10 @@ const Web3SignerProvider = (props: {
 
                 setProviders({
                     ...existingProviders,
-                    [event.detail.info.rdns]: event.detail,
+                    [event.detail.info.rdns]: {
+                        provider: new Loader("EIP6963", async () => event.detail.provider),
+                        info: event.detail.info,
+                    },
                 });
             },
         );
@@ -175,8 +179,8 @@ const Web3SignerProvider = (props: {
                 `Setting derivation path (${derivationPath}) for signer:`,
                 rdns,
             );
-            const prov = providers()[rdns]
-                .provider as unknown as HardwareSigner;
+            const prov = await providers()[rdns]
+                .provider.get() as unknown as HardwareSigner;
             prov.setDerivationPath(derivationPath);
         }
 
@@ -188,9 +192,10 @@ const Web3SignerProvider = (props: {
         if (wallet == undefined) {
             throw "wallet not found";
         }
+        const provider = await wallet.provider.get()
 
         log.debug(`Using wallet ${wallet.info.rdns}: ${wallet.info.name}`);
-        const addresses = (await wallet.provider.request({
+        const addresses = (await provider.request({
             method: "eth_requestAccounts",
         })) as string[];
         if (addresses.length === 0) {
@@ -199,13 +204,13 @@ const Web3SignerProvider = (props: {
 
         log.info(`Connected address from ${wallet.info.rdns}: ${addresses[0]}`);
 
-        wallet.provider.on("chainChanged", () => {
+        provider.on("chainChanged", () => {
             window.location.reload();
         });
-        setRawProvider(wallet.provider);
+        setRawProvider(provider);
 
         const signer = new JsonRpcSigner(
-            new BrowserProvider(wallet.provider),
+            new BrowserProvider(provider),
             addresses[0],
         ) as unknown as Signer;
         signer.rdns = wallet.info.rdns;

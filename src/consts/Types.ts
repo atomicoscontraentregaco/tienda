@@ -1,4 +1,5 @@
 import type { DictKey } from "../i18n/i18n";
+import Loader from "../lazy/Loader";
 
 export type ButtonLabelParams = {
     key: DictKey;
@@ -36,5 +37,5 @@ export type EIP1193Provider = {
 
 export type EIP6963ProviderDetail = {
     info: EIP6963ProviderInfo;
-    provider: EIP1193Provider;
+    provider: Loader<EIP1193Provider>;
 };

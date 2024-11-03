@@ -70,8 +70,8 @@ const LockupEvm = (props: {
 
                     if (customDerivationPathRdns.includes(signer().rdns)) {
                         currentSwap.derivationPath = (
-                            providers()[signer().rdns]
-                                .provider as unknown as HardwareSigner
+                            await providers()[signer().rdns]
+                                .provider.get() as unknown as HardwareSigner
                         ).getDerivationPath();
                     }
 

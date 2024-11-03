@@ -4,10 +4,11 @@ import bolt11 from "bolt11";
 import log from "loglevel";
 
 import { config } from "../config";
-import Bolt12 from "../lazy/bolt12";
+import Bolt12, { load } from "../lazy/bolt12";
 import { fetchBolt12Invoice } from "./boltzClient";
 import { lookup } from "./dnssec/dohLookup";
 import { checkResponse } from "./http";
+import Loader from "../lazy/Loader";
 
 type LnurlResponse = {
     minSendable: number;
@@ -246,59 +247,61 @@ export const isLnurl = (data: string) => {
     );
 };
 
-export const isBolt12Offer = async (offer: string) => {
-    try {
-        const { Offer } = await Bolt12.get();
-        new Offer(offer);
-        return true;
-
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (e) {
-        return false;
-    }
-};
-
-export const validateInvoiceForOffer = async (
-    offer: string,
-    invoice: string,
-) => {
-    const { Offer, Invoice } = await Bolt12.get();
-    const of = new Offer(offer);
-    const possibleSigners: Uint8Array[] = [];
-
-    if (of.signing_pubkey !== undefined) {
-        possibleSigners.push(of.signing_pubkey);
-    }
-
-    for (const path of of.paths) {
-        const hops = path.hops;
-        if (hops.length > 0) {
-            possibleSigners.push(hops[hops.length - 1].pubkey);
-        }
-
-        hops.forEach((hop) => hop.free());
-        path.free();
-    }
-
-    of.free();
-
-    const inv = new Invoice(invoice);
-
-    try {
-        const invoiceSigner = inv.signing_pubkey;
-
-        for (const signer of possibleSigners) {
-            if (signer.length !== invoiceSigner.length) {
-                continue;
-            }
-
-            if (signer.every((b, i) => b === invoiceSigner[i])) {
+export const Bolt12 = new Loader("Bolt12", async () => {
+    const { Offer, Invoice } = await load();
+    return {
+        isOffer: (offer: string) => {
+            try {
+                new Offer(offer);
                 return true;
-            }
-        }
-    } finally {
-        inv.free();
-    }
 
-    throw "invoice does not belong to offer";
-};
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (e) {
+                return false;
+            }
+        },
+        validateInvoiceForOffer: (
+            offer: string,
+            invoice: string,
+        ) => {
+            const of = new Offer(offer);
+            const possibleSigners: Uint8Array[] = [];
+
+            if (of.signing_pubkey !== undefined) {
+                possibleSigners.push(of.signing_pubkey);
+            }
+
+            for (const path of of.paths) {
+                const hops = path.hops;
+                if (hops.length > 0) {
+                    possibleSigners.push(hops[hops.length - 1].pubkey);
+                }
+
+                hops.forEach((hop) => hop.free());
+                path.free();
+            }
+
+            of.free();
+
+            const inv = new Invoice(invoice);
+
+            try {
+                const invoiceSigner = inv.signing_pubkey;
+
+                for (const signer of possibleSigners) {
+                    if (signer.length !== invoiceSigner.length) {
+                        continue;
+                    }
+
+                    if (signer.every((b, i) => b === invoiceSigner[i])) {
+                        return true;
+                    }
+                }
+            } finally {
+                inv.free();
+            }
+
+            throw "invoice does not belong to offer";
+        }
+    }
+})

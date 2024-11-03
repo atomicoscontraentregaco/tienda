@@ -11,7 +11,7 @@ import {
     decodeInvoice,
     extractAddress,
     extractInvoice,
-    isBolt12Offer,
+    Bolt12,
     isLnurl,
 } from "../utils/invoice";
 import { validateInvoice } from "../utils/validation";
@@ -58,13 +58,15 @@ const InvoiceInput = () => {
 
         const inputValue = extractInvoice(val);
 
+        const bolt12 = await Bolt12.get();
+
         try {
             input.setCustomValidity("");
             setInvoiceError(undefined);
             input.classList.remove("invalid");
             if (isLnurl(inputValue)) {
                 setLnurl(inputValue);
-            } else if (await isBolt12Offer(inputValue)) {
+            } else if (bolt12.isOffer(inputValue)) {
                 setBolt12Offer(inputValue);
             } else {
                 const sats = await validateInvoice(inputValue);

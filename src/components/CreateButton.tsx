@@ -330,8 +330,8 @@ export const CreateButton = () => {
                     signer() !== undefined &&
                     customDerivationPathRdns.includes(signer().rdns)
                         ? (
-                              providers()[signer().rdns]
-                                  .provider as unknown as HardwareSigner
+                              await providers()[signer().rdns]
+                                  .provider.get() as unknown as HardwareSigner
                           ).getDerivationPath()
                         : undefined,
             });

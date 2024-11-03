@@ -1,8 +1,7 @@
 import type Transport from "@ledgerhq/hw-transport";
+import { LoadType } from "./Loader";
 
-import Loader from "./Loader";
-
-export default new Loader("Ledger", async () => {
+export const load = async () => {
     const [eth, webhid] = await Promise.all([
         import("@ledgerhq/hw-app-eth"),
         import("@ledgerhq/hw-transport-webhid"),
@@ -12,6 +11,8 @@ export default new Loader("Ledger", async () => {
         eth: eth.default,
         webhid: webhid.default,
     };
-});
+}
+
+export type LedgerModules = LoadType<typeof load>;
 
 export { Transport };

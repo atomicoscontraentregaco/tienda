@@ -6,7 +6,7 @@ import { Transaction as LiquidTransaction } from "liquidjs-lib";
 import { config } from "../config";
 import { SwapType } from "../consts/Enums";
 import { fetcher } from "./helper";
-import { validateInvoiceForOffer } from "./invoice";
+import { Bolt12 } from "./invoice";
 
 const cooperativeErrorMessage = "cooperative signatures for swaps are disabled";
 const checkCooperative = () => {
@@ -190,7 +190,8 @@ export const fetchBolt12Invoice = async (
             amount: amountSat,
         },
     );
-    await validateInvoiceForOffer(offer, res.invoice);
+    const bolt12 = await Bolt12.get();
+    bolt12.validateInvoiceForOffer(offer, res.invoice);
 
     return res;
 };
